@@ -22,6 +22,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+
+
+
  public class ConnectScreen extends Activity implements OnClickListener{
  
 	 public EditText ipAddress = null;

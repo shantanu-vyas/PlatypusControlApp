@@ -24,28 +24,16 @@ public class MapTest extends Activity {
 	        GoogleMap map = ((MapFragment) getFragmentManager()
 	                .findFragmentById(R.id.map)).getMap();
 
-	        LatLng pittsburgh = new LatLng(80.0000, 40.4417);
+	        LatLng pittsburgh = new LatLng((float)40.436871,(float)-79.948825);
 
 	        map.setMyLocationEnabled(true);
-	        map.moveCamera(CameraUpdateFactory.newLatLngZoom(pittsburgh, 2));
+	        map.moveCamera(CameraUpdateFactory.newLatLngZoom(pittsburgh, 15));
+	        map.animateCamera( CameraUpdateFactory.zoomTo( 17.0f ) );
 
 	        map.addMarker(new MarkerOptions()
 	                .title("Pittsburgh")
 	                .snippet("asdfasdf pittsburgh")
 	                .position(pittsburgh));
-	        Location location = map.getMyLocation();
-	        //String s = location.toString();
-	       // loca.setText(s);
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.maptest);
-//        
- //       GoogleMap gmap = (GoogleMap)this.findViewById(R.id.map);
-  //      LatLng sydney = new LatLng(-33.867, 151.206);
-
-        //gmap.setMyLocationEnabled(true);
-        //gmap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
-
-    }
+	        
+	  }
 }

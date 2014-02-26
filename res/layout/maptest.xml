@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
 
  <fragment
      android:id="@+id/map"
@@ -11,9 +11,56 @@
      android:layout_height="324dp" >
 
  </fragment>
+  
   <TextView
-        android:id="@+id/loc"
+        android:id="@+id/getThrustProgress"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="location: "/>
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:text="0"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/thrustBarTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="Thrust Bar" />
+
+    <SeekBar
+        android:id="@+id/thrustBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingLeft="15dp" />
+
+    <TextView
+        android:id="@+id/getRudderProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:text="50"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/rudderBarTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="Rudder Bar" />
+
+    <SeekBar
+        android:id="@+id/rudderBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal" />
+
+    <CheckBox
+        android:id="@+id/Autonomous"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="autoBox" />
+        
 </LinearLayout>

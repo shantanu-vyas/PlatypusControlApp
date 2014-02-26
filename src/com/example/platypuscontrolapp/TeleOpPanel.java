@@ -30,7 +30,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 
-import android.R.*;
+
 public class TeleOpPanel extends Activity implements OnClickListener{
     
     SeekBar thrust = null;

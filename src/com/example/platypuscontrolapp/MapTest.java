@@ -28,6 +28,7 @@ public class MapTest extends Activity {
 	    static TextView loca = null;
 	    CheckBox autonomous = null;
 	    static Marker boat;
+	    static Marker boat2;
 	    static LatLng pHollowStartingPoint;
 	    static double lat;
 	    static double lon;
@@ -59,14 +60,16 @@ public class MapTest extends Activity {
 
 	        pHollowStartingPoint = new LatLng((float)40.436871,(float)-79.948825);
 	        
-	        boat = map.addMarker(new MarkerOptions()
+	        boat2 = map.addMarker(new MarkerOptions()
+	        	.anchor(.5f, .5f)
+	        	.flat(true)
+	           .rotation(270)
 	           .title("Boat 1")
 	           .snippet("IP Address: 192.168.1.1")	             
 	           .position(pHollowStartingPoint)
 	           .flat(true)
-	           .anchor(0.5f,0.5f)
-	           .rotation((float) 90.0)
-	           .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
+	           //.icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
+	           );
 	        
 	        lat = pHollowStartingPoint.latitude;
 	        lon = pHollowStartingPoint.longitude;
@@ -85,9 +88,9 @@ public class MapTest extends Activity {
 				lat += Math.cos(heading)*(thrustCurrent-50)*.0000001;
 				lon += Math.sin(heading)*(thrustCurrent)*.0000001;
 				
-				boat.setPosition(new LatLng(lat,lon));							
+				boat2.setPosition(new LatLng(lat,lon));							
 				loca.setText(lat + "\n" + lon);
-				boat.setRotation((float) (heading*(180/Math.PI)));
+				boat2.setRotation((float) (heading*(180/Math.PI)));
 			
 				handlerRudder.postDelayed(this,300);
 				}});

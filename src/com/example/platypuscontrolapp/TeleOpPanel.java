@@ -15,11 +15,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
@@ -29,7 +33,7 @@ import android.widget.LinearLayout;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
-
+import android.os.Handler;
 
 public class TeleOpPanel extends Activity implements OnClickListener{
     
@@ -43,8 +47,21 @@ public class TeleOpPanel extends Activity implements OnClickListener{
     Button mapButton = null;
     static TextView testIP = null;
     Thread networkThread = null;
+    TextView test = null;
+    Handler network = new Handler();
     
-    @SuppressLint("NewApi")
+    DatagramSocket socket = null;
+    DatagramPacket inPacket = null;
+    DatagramPacket outPacket = null;
+    byte[] inBuf;
+	byte[] outBuf;
+    int PORT = 8888;
+    String msg = null; 
+    int a = 0;
+    String asdf;
+    ASDF Asdf;
+    String data;
+	
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -59,10 +76,12 @@ public class TeleOpPanel extends Activity implements OnClickListener{
         //testIP = (TextView)this.findViewById(R.id.test);
         mapButton = (Button)this.findViewById(R.id.mapButton);
         autonomous = (CheckBox)this.findViewById(R.id.Autonomous);
-        
+        test = (TextView)this.findViewById(R.id.infotest);
+        		
+        thrust.setProgress(0);
         rudder.setProgress(50);
         
-        //serverTest();
+        new ASDF().execute();
         
         
         if (validIP(ConnectScreen.textIpAddress))
@@ -126,110 +145,82 @@ public class TeleOpPanel extends Activity implements OnClickListener{
         
         
     }
-    public static void serverTest()
+    public void serverTest()
     {
-    	String sHostName = "127.0.0.1";
-        InetAddress IPAddress = null;
-        boolean done;
-        boolean keepGoing;
-
-        String s1;
-        ArrayList lines = new ArrayList();
-        int size;
-        BufferedReader br;
-
-        try {
-            IPAddress = InetAddress.getByName(sHostName);
-            System.out.println ("Attemping to connect to " + IPAddress +
-                                ") via UDP port 9876");
-        }
-        catch (UnknownHostException ex)
-            {
-                System.err.println(ex);
-                System.exit(1);
-            }
-
-
-        // set up the buffered reader to read from the keyboard
-        try {
-            //br = new BufferedReader (new FileReader ("UDPInputFile.txt"));
-        	s1 = "test";
-            
-            while (s1 != null)
-                {
-                    lines.add(s1);
-                  
-                }
-            size = lines.size();
-            System.out.println ("ArrayList lines has size of: " + size);
-
-            done = false;
-
-            DatagramSocket clientSocket = new DatagramSocket();
-            for (int i = 0; i < size ; i++)
-                {
-
-                    byte[] sendData = new byte[1024];
-
-                    s1 = (String) lines.get(i);
-                    sendData = s1.getBytes();
-
-                    System.out.println ("Sending data to " + sendData.length +
-                                        " bytes to server from line " + (i + 1));
-                    DatagramPacket sendPacket =
-                        new DatagramPacket(sendData, sendData.length, IPAddress, 9876);
-
-                    clientSocket.send(sendPacket);
-                }
-            done = true;
-
-            byte[] receiveData = new byte[1024];
-
-            keepGoing = true;
-
-            DatagramPacket receivePacket =
-                new DatagramPacket(receiveData, receiveData.length);
-
-            System.out.println ("Waiting for return packet");
-            clientSocket.setSoTimeout(10000);
-
-            while (keepGoing)
-                {
-                    try {
-                        clientSocket.receive(receivePacket);
-                        String modifiedSentence =
-                            new String(receivePacket.getData());
-
-                        //InetAddress returnIPAddress = receivePacket.getAddress();
-
-                        //int port = receivePacket.getPort();
-
-                        //System.out.println ("From server at: " + returnIPAddress +
-                        //                    ":" + port);
-                        System.out.println("Message: " + modifiedSentence);
-
-                    }
-                    catch (SocketTimeoutException ste)
-                        {
-                            System.out.println ("Timeout Occurred: Packet assumed lost");
-                            if (done)
-                                keepGoing = false;
-                        }
-
-                }
-            clientSocket.close();
-        }
-        catch (IOException ex)
-            {
-                System.err.println(ex);
-            }
-    }
-
+    //	Runnable r = new Runnable()
+    	{
+    	//	public void run()
+    		{
+    			 DatagramSocket socket = null;
+    			    DatagramPacket inPacket = null;
+    			    DatagramPacket outPacket = null;
+    			    byte[] inBuf, outBuf;
+    			    final int PORT = 8888;
+    			    String msg = null;
+    			 
+    			    try {
+    			      //InetAddress address = InetAddress.getByName("127.0.0.1");
+    			       InetAddress address = InetAddress.getByName("http://10.0.2.2:8080");
+    			      socket = new DatagramSocket();
+//    			     // while (true)
+//    			      {
+//    			      //Convert string to byte and send to server
+    			      msg = "shantanu";
+    			      outBuf = msg.getBytes();
+    			      outPacket = new DatagramPacket(outBuf, 0, outBuf.length,
+    			              address, PORT);
+    			      socket.send(outPacket);
+    			      System.out.println(msg);
+//    			 	
+//    			      //Receive reversed message from server
+//    			      
+    			      inBuf = new byte[256];
+    			      inPacket = new DatagramPacket(inBuf, inBuf.length);
+    			      socket.receive(inPacket);
+//    			 
+    			      data = new String(inPacket.getData(), 0, inPacket.getLength());
+//    			 
+    			      System.out.println("Server : " + data);
+    			      }
+    			    catch (IOException ioe) {
+    			    	System.out.println("didnt work you dunce");
+    			      System.out.println(ioe);
+    			    }
+//    	    	network.postDelayed(this, 10000);
+    		}
+    	};	
+    	//\network.post(r);
+  
+	}
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		startActivity(new Intent(this,MapTest.class));
 	}
-
-    }//class
+	private class ASDF extends AsyncTask<String, Integer, String>
+	{
+		long oldTime = 0;
+		@Override
+		protected String doInBackground(String... arg0) {
+			while(true)
+			{
+				if(System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
+				{
+					serverTest();
+					
+					oldTime = System.currentTimeMillis();
+					a +=1;
+					publishProgress();
+				}
+			}
+		}
+		@Override
+		protected void onProgressUpdate(Integer... result)
+		{
+			test.setText("" + a);			// TODO Auto-generated method stub
+		}
+		
+		
+	}
+}//class
     

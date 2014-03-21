@@ -33,7 +33,6 @@ import android.widget.LinearLayout;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
-import android.os.Handler;
 
 public class TeleOpPanel extends Activity implements OnClickListener{
     
@@ -58,9 +57,8 @@ public class TeleOpPanel extends Activity implements OnClickListener{
     int PORT = 8888;
     String msg = null; 
     int a = 0;
-    String asdf;
-    ASDF Asdf;
-    String data;
+    String data = "";
+    
 	
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -81,7 +79,7 @@ public class TeleOpPanel extends Activity implements OnClickListener{
         thrust.setProgress(0);
         rudder.setProgress(50);
         
-        new ASDF().execute();
+        new NetworkAsync().execute();
         
         
         if (validIP(ConnectScreen.textIpAddress))
@@ -142,63 +140,47 @@ public class TeleOpPanel extends Activity implements OnClickListener{
                 // TODO Auto-generated method stub
             }
         });
-        
-        
+       
     }
     public void serverTest()
-    {
-    //	Runnable r = new Runnable()
-    	{
-    	//	public void run()
-    		{
-    			 DatagramSocket socket = null;
-    			    DatagramPacket inPacket = null;
-    			    DatagramPacket outPacket = null;
-    			    byte[] inBuf, outBuf;
-    			    final int PORT = 8888;
-    			    String msg = null;
-    			 
-    			    try {
-    			      //InetAddress address = InetAddress.getByName("127.0.0.1");
-    			       InetAddress address = InetAddress.getByName("http://10.0.2.2:8080");
-    			      socket = new DatagramSocket();
-//    			     // while (true)
-//    			      {
-//    			      //Convert string to byte and send to server
-    			      msg = "shantanu";
-    			      outBuf = msg.getBytes();
-    			      outPacket = new DatagramPacket(outBuf, 0, outBuf.length,
-    			              address, PORT);
-    			      socket.send(outPacket);
-    			      System.out.println(msg);
-//    			 	
-//    			      //Receive reversed message from server
-//    			      
-    			      inBuf = new byte[256];
-    			      inPacket = new DatagramPacket(inBuf, inBuf.length);
-    			      socket.receive(inPacket);
-//    			 
-    			      data = new String(inPacket.getData(), 0, inPacket.getLength());
-//    			 
-    			      System.out.println("Server : " + data);
-    			      }
-    			    catch (IOException ioe) {
-    			    	System.out.println("didnt work you dunce");
-    			      System.out.println(ioe);
-    			    }
-//    	    	network.postDelayed(this, 10000);
-    		}
-    	};	
-    	//\network.post(r);
-  
+    {			 
+    	System.out.println("server test asdf");
+        
+	    try {
+	 
+	    	System.out.println("shantanu");
+	        InetAddress address = InetAddress.getByName("http://10.0.2.2:8080");
+	        socket = new DatagramSocket();
+	        msg = "shantanu";
+	        outBuf = msg.getBytes();
+	        outPacket = new DatagramPacket(outBuf, 0, outBuf.length, address, PORT);
+	        socket.send(outPacket);
+	        inBuf = new byte[256];
+	        inPacket = new DatagramPacket(inBuf, inBuf.length);
+	        socket.receive(inPacket);
+	        data = new String(inPacket.getData(), 0, inPacket.getLength());
+	     	System.out.println("Server : " + data);
+	        test.setText("server" );
+	      	}
+	    catch (IOException ioe) {
+     	   	data = ioe.toString();
+	        System.out.println(ioe);
+    	      test.setText(ioe.toString());
+	    }
 	}
+
+
+	
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		startActivity(new Intent(this,MapTest.class));
 	}
-	private class ASDF extends AsyncTask<String, Integer, String>
+	
+	
+		private class NetworkAsync extends AsyncTask<String, Integer, String>
 	{
+		
 		long oldTime = 0;
 		@Override
 		protected String doInBackground(String... arg0) {
@@ -206,8 +188,8 @@ public class TeleOpPanel extends Activity implements OnClickListener{
 			{
 				if(System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
 				{
-					serverTest();
-					
+					serverTest();	
+					//serverThread();
 					oldTime = System.currentTimeMillis();
 					a +=1;
 					publishProgress();
@@ -217,10 +199,13 @@ public class TeleOpPanel extends Activity implements OnClickListener{
 		@Override
 		protected void onProgressUpdate(Integer... result)
 		{
-			test.setText("" + a);			// TODO Auto-generated method stub
+	
+			test.setText("" + a + "\n");			// TODO Auto-generated method stub
+			
 		}
 		
 		
 	}
+
 }//class
     

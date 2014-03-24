@@ -44,6 +44,8 @@ public class MapTest extends Activity {
 	        super.onCreate(savedInstanceState);
 	        setContentView(R.layout.maptest);
 	       
+	      //  if (ConnectScreen.getBoatType() == false)
+	        {
 	        thrust = (SeekBar)this.findViewById(R.id.thrustBar);
 	        rudder = (SeekBar)this.findViewById(R.id.rudderBar);
 	        thrustProgress = (TextView)this.findViewById(R.id.getThrustProgress);
@@ -95,7 +97,7 @@ public class MapTest extends Activity {
 				handlerRudder.postDelayed(this,300);
 				}});
 	        
-
+	        }
 	  }
 	public static void updateThrust()
 	{

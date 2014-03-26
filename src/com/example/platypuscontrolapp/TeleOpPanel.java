@@ -1,29 +1,39 @@
 package com.example.platypuscontrolapp;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.LinearLayout;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import edu.cmu.ri.crw.AsyncVehicleServer;
+import edu.cmu.ri.crw.CrwNetworkUtils;
+import edu.cmu.ri.crw.FunctionObserver;
+import edu.cmu.ri.crw.FunctionObserver.FunctionError;
+import edu.cmu.ri.crw.VelocityListener;
+import edu.cmu.ri.crw.data.Twist;
+import edu.cmu.ri.crw.udp.UdpServer;
+import edu.cmu.ri.crw.udp.UdpVehicleServer;
+import java.net.InetSocketAddress;
 
 public class TeleOpPanel extends Activity implements OnClickListener {
 
+	private static final VelocityListener FunctionObserver = null;
 	SeekBar thrust = null;
 	SeekBar rudder = null;
 	TextView ipAddressBox = null;
@@ -66,7 +76,7 @@ public class TeleOpPanel extends Activity implements OnClickListener {
 		test = (TextView) this.findViewById(R.id.infotest);
 		thrust.setProgress(0);
 		rudder.setProgress(50);
-
+		
 		new NetworkAsync().execute();
 		// serverTest();
 
@@ -195,6 +205,18 @@ public class TeleOpPanel extends Activity implements OnClickListener {
 		startActivity(new Intent(this, MapTest.class));
 	}
 
+	
+	public void boatConnectTest()
+	{
+		UdpVehicleServer server = new UdpVehicleServer();
+		InetSocketAddress addr = CrwNetworkUtils.toInetSocketAddress("127.0.0.1:11411");
+		server.setVehicleService(addr);
+		Twist twist = new Twist();
+		twist.dx(thrust.getProgress()*.010);
+		twist.drz(rudder.getProgress()*.010);
+		server.setVelocity(twist, null);
+		
+	}
 	private class NetworkAsync extends AsyncTask<String, Integer, String> {
 		long oldTime = 0;
 
@@ -203,10 +225,8 @@ public class TeleOpPanel extends Activity implements OnClickListener {
 			while (true) {
 				if (System.currentTimeMillis() % 100 == 0
 						&& oldTime != System.currentTimeMillis()) {
-					// serverThread();
-
-					clientTest2();
-
+					//clientTest2();
+					boatConnectTest();
 					oldTime = System.currentTimeMillis();
 					a += 1;
 					publishProgress();
@@ -221,5 +241,6 @@ public class TeleOpPanel extends Activity implements OnClickListener {
 		}
 
 	}
+	
 
 }// class

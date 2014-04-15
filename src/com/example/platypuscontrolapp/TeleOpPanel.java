@@ -55,10 +55,10 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		String serverData;
 		String clientData;
 		InetSocketAddress addr;
-
 		UdpVehicleServer server = null;
-		Twist twist = null;
-		
+		Twist twist = new Twist();
+	
+
 		protected void onCreate(Bundle savedInstanceState)
 			{
 				super.onCreate(savedInstanceState);
@@ -76,25 +76,28 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				test = (TextView) this.findViewById(R.id.infotest);
 				thrust.setProgress(0);
 				rudder.setProgress(50);
+				
+				//testing new boat stuff
+				
 
 				new NetworkAsync().execute();
 				// serverTest();
 
-				if (ConnectScreen.getBoatType() == true)
-					{
-
-						if (validIP(ConnectScreen.textIpAddress))
-							{
-								ipAddressBox.setBackgroundColor(Color.GREEN);
-							} else
-							{
-								ipAddressBox.setBackgroundColor(Color.RED);
-							}
-						if (ConnectScreen.textIpAddress != "")
-							{
-								ipAddressBox.setText("Boats IP: " + ConnectScreen.getIpAddress() + "");
-							}
-					}
+//				if (ConnectScreen.getBoatType() == true)
+//					{
+//
+//						if (validIP(ConnectScreen.textIpAddress))
+//							{
+//								ipAddressBox.setBackgroundColor(Color.GREEN);
+//							} else
+//							{
+//								ipAddressBox.setBackgroundColor(Color.RED);
+//							}
+//						if (ConnectScreen.textIpAddress != "")
+//							{
+//								ipAddressBox.setText("Boats IP: " + ConnectScreen.getIpAddress() + "");
+//							}
+//					}
 				if (ConnectScreen.getBoatType() == false)
 					{
 						ipAddressBox.setText("Simulated Phone");
@@ -105,6 +108,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				mapButton.setOnClickListener(this);
 
 			}
+		
 
 		public static boolean validIP(String ip)
 			{
@@ -153,62 +157,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 
 			}
 
-		public void clientTest2()
-			{
-
-				try
-					{
-						a += 1;
-						// Retrieve the ServerName
-						InetAddress serverAddr = InetAddress.getByName("192.168.1.10");
-						Log.d("UDPClient", "C: Connecting...");
-						DatagramSocket socket = new DatagramSocket();
-						byte[] buf = ("Hello from Client" + a).getBytes();
-						DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAddr, 8888);
-						Log.d("UDPClient", "C: Sending: '" + new String(buf) + "'");
-						socket.send(packet);
-						Log.d("UDPClient", "C: Sent.");
-						Log.d("UDPClient", "C: Done.");
-						socket.close();
-					} catch (Exception e)
-					{
-						Log.e("UDPClient", "C: Error", e);
-					}
-			}
-
-		public void serverTest()
-			{
-				new Thread()
-					{
-						public void run()
-							{
-								try
-									{
-										while (true)
-											{
-												/* Retrieve the ServerName */
-												InetAddress serverAddr = InetAddress.getByName("127.0.0.1");
-												Log.d("UDPServer", "S: Connecting...");
-												/* Create new UDP-Socket */
-												DatagramSocket socket = new DatagramSocket(8888, serverAddr);
-												byte[] buf = new byte[20];
-												DatagramPacket packet = new DatagramPacket(buf, buf.length);
-												Log.d("UDPServer", "S: Receiving...");
-												socket.receive(packet);
-												serverData = new String(packet.getData());
-												Log.d("UDPServer", "S: Received: '" + new String(packet.getData()) + "'");
-												Log.d("UDPServer", "S: Done.");
-												socket.close();
-											}
-									}
-
-								catch (Exception e)
-									{
-										System.out.println("UDP" + "S: Error" + e);
-									}
-							}
-					}.start();
-			}
+		
 
 		@Override
 		public void onClick(View v)
@@ -220,24 +169,27 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		public void initBoat()
 			{
 				server = new UdpVehicleServer();
-				if (ConnectScreen.getIpAddress() != null || ConnectScreen.getIpAddress() != "")
+				if (ConnectScreen.getAddress() != null)
 					{
 						addr = CrwNetworkUtils.toInetSocketAddress(ConnectScreen.getIpAddress() + ":11411");
-					}
-				else
+					} else
 					{
 						addr = CrwNetworkUtils.toInetSocketAddress("127.0.0.1:11411");
 					}
 				server.setVehicleService(addr);
 				twist = new Twist();
+				
+				
 			}
-
+		
 		public void boatConnectTest()
 			{
-				
-				twist.dx(thrust.getProgress() * .010);
-				twist.drz(rudder.getProgress() * .010);
-				server.setVelocity(twist, null);
+
+				//twist.dx(thrust.getProgress() * .010);
+				//twist.drz(rudder.getProgress() * .010);
+				//ConnectScreen.boat.returnServer().setVelocity(twist, null);
+				ConnectScreen.boat.setVelocity(thrust.getProgress(), rudder.getProgress());
+				//server.setVelocity(twist, null);
 
 			}
 
@@ -252,7 +204,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 							{
 								if (System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
 									{
-										// clientTest2();
+										
 										boatConnectTest();
 										oldTime = System.currentTimeMillis();
 										a += 1;
@@ -267,7 +219,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 						test.setText("" + a + "\n" + serverData); // TODO
 																	// Auto-generated
 																	// method
-																	// stub
+																// stub
 					}
 
 			}

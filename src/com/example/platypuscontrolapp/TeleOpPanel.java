@@ -63,7 +63,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 			{
 				super.onCreate(savedInstanceState);
 				this.setContentView(R.layout.teleoppanel);
-				initBoat();
+				//initBoat();
 				ipAddressBox = (TextView) this.findViewById(R.id.printIpAddress);
 				thrust = (SeekBar) this.findViewById(R.id.thrustBar);
 				rudder = (SeekBar) this.findViewById(R.id.rudderBar);
@@ -106,7 +106,6 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				seekBarValue(rudder, rudderProgress);
 				mapButton = (Button) this.findViewById(R.id.mapButton);
 				mapButton.setOnClickListener(this);
-
 			}
 		
 
@@ -165,34 +164,11 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				// TODO Auto-generated method stub
 				startActivity(new Intent(this, MapTest.class));
 			}
-
-		public void initBoat()
-			{
-				server = new UdpVehicleServer();
-				if (ConnectScreen.getAddress() != null)
-					{
-						addr = CrwNetworkUtils.toInetSocketAddress(ConnectScreen.getIpAddress() + ":11411");
-					} else
-					{
-						addr = CrwNetworkUtils.toInetSocketAddress("127.0.0.1:11411");
-					}
-				server.setVehicleService(addr);
-				twist = new Twist();
-				
-				
-			}
 		
-		public void boatConnectTest()
+		public void updateVelocity(Boat a)
 			{
-
-				//twist.dx(thrust.getProgress() * .010);
-				//twist.drz(rudder.getProgress() * .010);
-				//ConnectScreen.boat.returnServer().setVelocity(twist, null);
 				ConnectScreen.boat.setVelocity(thrust.getProgress(), rudder.getProgress());
-				//server.setVelocity(twist, null);
-
 			}
-
 		private class NetworkAsync extends AsyncTask<String, Integer, String>
 			{
 				long oldTime = 0;
@@ -204,8 +180,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 							{
 								if (System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
 									{
-										
-										boatConnectTest();
+										updateVelocity(ConnectScreen.boat);
 										oldTime = System.currentTimeMillis();
 										a += 1;
 										publishProgress();

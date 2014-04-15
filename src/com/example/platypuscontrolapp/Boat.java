@@ -25,8 +25,6 @@ public class Boat
 				tw = new Twist();
 			}
 
-		
-
 		public void setAddress(InetSocketAddress a)
 			{
 				server.setVehicleService(a);
@@ -34,7 +32,7 @@ public class Boat
 
 		public void getPose()
 			{
-
+				
 			}
 		public double getThrust()
 			{
@@ -56,5 +54,5 @@ public class Boat
 				return server;
 				
 			}
-
+		
 	}

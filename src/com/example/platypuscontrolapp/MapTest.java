@@ -37,7 +37,7 @@ public class MapTest extends Activity {
 	    public static int thrustCurrent;
 	    public static int rudderCurrent;
 	    public static double heading = Math.PI/2.;
-	    
+	    public static GoogleMap map;
  	
 	@Override
 	    protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class MapTest extends Activity {
 	        updateRudder();
 	       
 	        // Get a handle to the Map Fragment
-	        GoogleMap map = ((MapFragment) getFragmentManager()
+	        map = ((MapFragment) getFragmentManager()
 	                .findFragmentById(R.id.map)).getMap();
 
 	        pHollowStartingPoint = new LatLng((float)40.436871,(float)-79.948825);
@@ -131,4 +131,17 @@ public class MapTest extends Activity {
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {}});
 	}
+	public static void makeBoatMarker(Boat a)
+		{
+			 Marker boata = map.addMarker(new MarkerOptions()
+	        	.anchor(.5f, .5f)
+	        	.flat(true)
+	           .rotation(270)
+	           .title("Boat 1")
+	           .snippet("IP Address: 192.168.1.1")	             
+	           .position(new latlng)
+	           .flat(true)
+	           //.icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
+	           );
+		}
 }

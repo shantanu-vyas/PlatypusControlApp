@@ -3,7 +3,11 @@ package com.example.platypuscontrolapp;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import android.widget.TextView;
+
+import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.data.Twist;
+import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
 
 public class Boat
@@ -12,7 +16,8 @@ public class Boat
 		private String name;
 		private InetSocketAddress ipAddress;
 		private Twist tw = null;
-
+		private PoseListener pl;
+		private UtmPose pose;
 		public Boat()
 			{
 			}
@@ -32,15 +37,25 @@ public class Boat
 
 		public void getPose()
 			{
+				pl = new PoseListener() {
 				
+			  public void receivedPose(UtmPose upwcs)
+						{
+						 UtmPose _pose = upwcs.clone();
+							 {
+								System.out.println(_pose.pose.getX());
+							 }
+						}
+				};
+				server.addPoseListener(pl, null);
 			}
 		public double getThrust()
 			{
-				return tw.dx();
+				return tw.dx()/.010;
 			}
-		public double getVelocity()
+		public double getRudder()
 			{
-				return tw.drz();
+				return tw.drz()/.010;
 			}
 
 		public void setVelocity(int thrust, int rudder)
@@ -54,5 +69,4 @@ public class Boat
 				return server;
 				
 			}
-		
 	}

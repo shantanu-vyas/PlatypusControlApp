@@ -22,7 +22,9 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import edu.cmu.ri.crw.CrwNetworkUtils;
+import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.data.Twist;
+import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
 import java.net.InetSocketAddress;
 
@@ -57,6 +59,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		InetSocketAddress addr;
 		UdpVehicleServer server = null;
 		Twist twist = new Twist();
+		String random = "";
 	
 
 		protected void onCreate(Bundle savedInstanceState)
@@ -76,12 +79,36 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				test = (TextView) this.findViewById(R.id.infotest);
 				thrust.setProgress(0);
 				rudder.setProgress(50);
-				
+				//test.setText(ConnectScreen.boat.getPose());
 				//testing new boat stuff
+				ConnectScreen.boat.getPose();
+		
+
+				// change this to go to the boat class
+				// find a way to pass a parameter for variables so i can access x y z in a different 
+				// class while having the code being ran in the boat object
+				// finish method you were writing for map activity
+				// fix map activity so the automated stuff only works when you select simulation
+				// 
+				PoseListener pl = new PoseListener() {
+					
+					  public void receivedPose(UtmPose upwcs)
+								{
+								 UtmPose _pose = upwcs.clone();
+									 {
+							
+										 random = "" + _pose.pose.getX() + "\n" + _pose.pose.getY() + "\n" + _pose.pose.getZ();
+							
+									 }
+								}
+						};
+						ConnectScreen.boat.returnServer().addPoseListener(pl, null);
+					
 				
 
+				
 				new NetworkAsync().execute();
-				// serverTest();
+
 
 //				if (ConnectScreen.getBoatType() == true)
 //					{
@@ -169,6 +196,11 @@ public class TeleOpPanel extends Activity implements OnClickListener
 			{
 				ConnectScreen.boat.setVelocity(thrust.getProgress(), rudder.getProgress());
 			}
+		public void updateScreenVelocity()
+			{
+				thrust.setProgress((int)ConnectScreen.boat.getThrust());
+				rudder.setProgress((int)ConnectScreen.boat.getRudder());
+			}
 		private class NetworkAsync extends AsyncTask<String, Integer, String>
 			{
 				long oldTime = 0;
@@ -180,9 +212,13 @@ public class TeleOpPanel extends Activity implements OnClickListener
 							{
 								if (System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
 									{
+									  
+									
 										updateVelocity(ConnectScreen.boat);
+									//	updateScreenVelocity();
 										oldTime = System.currentTimeMillis();
-										a += 1;
+									//	a += 1;
+										
 										publishProgress();
 									}
 							}
@@ -191,10 +227,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				@Override
 				protected void onProgressUpdate(Integer... result)
 					{
-						test.setText("" + a + "\n" + serverData); // TODO
-																	// Auto-generated
-																	// method
-																// stub
+						test.setText("" + a + random);
 					}
 
 			}

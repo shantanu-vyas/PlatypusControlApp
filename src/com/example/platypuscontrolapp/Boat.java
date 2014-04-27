@@ -1,14 +1,13 @@
 package com.example.platypuscontrolapp;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-
-import android.widget.TextView;
-
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
+
+import org.jscience.geography.coordinates.*;
+
 
 public class Boat
 	{
@@ -18,6 +17,9 @@ public class Boat
 		private Twist tw = null;
 		private PoseListener pl;
 		private UtmPose pose;
+		private double xValue;
+		private double yValue;
+		private double zValue;
 		public Boat()
 			{
 			}
@@ -34,20 +36,29 @@ public class Boat
 			{
 				server.setVehicleService(a);
 			}
-
+		public InetSocketAddress getIpAddress()
+			{
+				return ipAddress;
+			}
 		public void getPose()
 			{
-				pl = new PoseListener() {
-				
-			  public void receivedPose(UtmPose upwcs)
-						{
-						 UtmPose _pose = upwcs.clone();
-							 {
-								System.out.println(_pose.pose.getX());
-							 }
-						}
-				};
-				server.addPoseListener(pl, null);
+				PoseListener pl = new PoseListener() {
+					
+					  public void receivedPose(UtmPose upwcs)
+								{
+								 UtmPose _pose = upwcs.clone();
+									 {
+										// random = "" + _pose.pose.getX() + "\n" + _pose.pose.getY() + "\n" + _pose.pose.getZ();
+										 xValue = _pose.pose.getX();
+										 yValue = _pose.pose.getY();
+										 zValue = _pose.pose.getZ();
+										 //_pose.origin.
+		
+									 }
+								}
+						};
+						ConnectScreen.boat.returnServer().addPoseListener(pl, null);
+					
 			}
 		public double getThrust()
 			{
@@ -66,7 +77,18 @@ public class Boat
 			}
 		public UdpVehicleServer returnServer()
 			{
-				return server;
-				
+				return server;	
+			}
+		public double getPoseX()
+			{
+				return xValue;
+			}
+		public double getPoseY()
+			{
+				return yValue;
+			}
+		public double getPoseZ()
+			{
+				return zValue;
 			}
 	}

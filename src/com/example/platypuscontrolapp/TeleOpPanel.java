@@ -2,18 +2,15 @@ package com.example.platypuscontrolapp;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -21,12 +18,18 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import edu.cmu.ri.crw.CrwNetworkUtils;
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
 import java.net.InetSocketAddress;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TeleOpPanel extends Activity implements OnClickListener
 	{
@@ -44,24 +47,29 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		TextView test = null;
 		Handler network = new Handler();
 
-		DatagramSocket socket = null;
-		DatagramPacket inPacket = null;
-		DatagramPacket outPacket = null;
-		byte[] inBuf;
-		byte[] outBuf;
-		int PORT = 8888;
-		String msg = null;
 		int a = 0;
-		String data = "";
-		String ipAddress;
-		String serverData;
-		String clientData;
 		InetSocketAddress addr;
 		UdpVehicleServer server = null;
 		Twist twist = new Twist();
 		String random = "";
-	
+		double xValue;
+		double yValue;
+		double zValue;
+		GoogleMap map;
 
+		
+		TextView loca = null;
+		Marker boat;
+		Marker boat2;
+		LatLng pHollowStartingPoint = new LatLng((float) 40.436871, (float) -79.948825);
+		double lat;
+		double lon;
+		Handler handlerRudder = new Handler();
+		int thrustCurrent;
+		int rudderCurrent;
+		double heading = Math.PI / 2.;
+		
+		
 		protected void onCreate(Bundle savedInstanceState)
 			{
 				super.onCreate(savedInstanceState);
@@ -76,61 +84,42 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				// testIP = (TextView)this.findViewById(R.id.test);
 				mapButton = (Button) this.findViewById(R.id.mapButton);
 				autonomous = (CheckBox) this.findViewById(R.id.Autonomous);
-				test = (TextView) this.findViewById(R.id.infotest);
+				map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+				
+				
 				thrust.setProgress(0);
 				rudder.setProgress(50);
 				//test.setText(ConnectScreen.boat.getPose());
-				//testing new boat stuff
-				ConnectScreen.boat.getPose();
-		
 
-				// change this to go to the boat class
-				// find a way to pass a parameter for variables so i can access x y z in a different 
-				// class while having the code being ran in the boat object
-				// finish method you were writing for map activity
-				// fix map activity so the automated stuff only works when you select simulation
-				// 
+				ConnectScreen.boat.getPose();
+				ipAddressBox.setText(ConnectScreen.boat.getIpAddress().toString());
+				updateThrust();
+				updateRudder();
+			//	ConnectScreen.boat.getPose();
+				
 				PoseListener pl = new PoseListener() {
 					
 					  public void receivedPose(UtmPose upwcs)
 								{
 								 UtmPose _pose = upwcs.clone();
 									 {
-							
 										 random = "" + _pose.pose.getX() + "\n" + _pose.pose.getY() + "\n" + _pose.pose.getZ();
-							
+										 xValue = _pose.pose.getX();
+										 yValue = _pose.pose.getY();
+										 zValue = _pose.pose.getZ();
 									 }
 								}
 						};
 						ConnectScreen.boat.returnServer().addPoseListener(pl, null);
-					
-				
 
 				
 				new NetworkAsync().execute();
 
-
-//				if (ConnectScreen.getBoatType() == true)
-//					{
-//
-//						if (validIP(ConnectScreen.textIpAddress))
-//							{
-//								ipAddressBox.setBackgroundColor(Color.GREEN);
-//							} else
-//							{
-//								ipAddressBox.setBackgroundColor(Color.RED);
-//							}
-//						if (ConnectScreen.textIpAddress != "")
-//							{
-//								ipAddressBox.setText("Boats IP: " + ConnectScreen.getIpAddress() + "");
-//							}
-//					}
 				if (ConnectScreen.getBoatType() == false)
 					{
 						ipAddressBox.setText("Simulated Phone");
+						simulatedBoat();
 					}
-				seekBarValue(thrust, thrustProgress);
-				seekBarValue(rudder, rudderProgress);
 				mapButton = (Button) this.findViewById(R.id.mapButton);
 				mapButton.setOnClickListener(this);
 			}
@@ -155,36 +144,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 						return false;
 					}
 			}
-
-		public static void seekBarValue(SeekBar seekBar, final TextView text)
-			{
-				seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-					{
-						@Override
-						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
-							{
-								// TODO Auto-generated method stub
-								text.setText(String.valueOf(progress));
-							}
-
-						@Override
-						public void onStartTrackingTouch(SeekBar seekBar)
-							{
-
-								// TODO Auto-gbenerated method stub
-							}
-
-						@Override
-						public void onStopTrackingTouch(SeekBar seekBar)
-							{
-								// TODO Auto-generated method stub
-							}
-					});
-
-			}
-
 		
-
 		@Override
 		public void onClick(View v)
 			{
@@ -227,8 +187,92 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				@Override
 				protected void onProgressUpdate(Integer... result)
 					{
-						test.setText("" + a + random);
+						//test.setText("" + a + random);
 					}
+			}
+		
+		public void updateThrust()
+			{
+				thrust.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+					{
+						@Override
+						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+							{
+								// TODO Auto-generated method stub
+								thrustProgress.setText(String.valueOf(progress));
+								thrustCurrent = progress;
+							} 	
+
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar)
+							{
+							}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar)
+							{
+							}
+					});
+			}
+
+		public void updateRudder()
+			{
+				rudder.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+					{
+						@Override
+						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+							{
+								// TODO Auto-generated method stub
+								rudderProgress.setText(String.valueOf(progress));
+								rudderCurrent = progress;
+							}
+
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar)
+							{
+							}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar)
+							{
+							}
+					});
+			}
+
+		
+		public void simulatedBoat()
+			{
+				
+				boat2 = map.addMarker(new MarkerOptions()
+							.anchor(.5f, .5f).flat(true)
+							.rotation(270).title("Boat 1")
+							.snippet("IP Address: 192.168.1.1")
+							.position(pHollowStartingPoint)
+							.flat(true)
+						// .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
+						);
+
+				lat = pHollowStartingPoint.latitude;
+				lon = pHollowStartingPoint.longitude;
+				map.setMyLocationEnabled(true);
+				map.moveCamera(CameraUpdateFactory.newLatLngZoom(pHollowStartingPoint, 15));
+				map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+
+			
+//				handlerRudder.post(new Runnable()
+//					{
+//						@Override
+//						public void run()
+//							{
+//								heading -= (rudderCurrent - 50) * .001;
+//								lat += Math.cos(heading) * (thrustCurrent - 50) * .0000001;
+//								lon += Math.sin(heading) * (thrustCurrent) * .0000001;
+//								boat2.setPosition(new LatLng(lat, lon));
+//								loca.setText(lat + "\n" + lon);
+//								boat2.setRotation((float) (heading * (180 / Math.PI)));
+//								handlerRudder.postDelayed(this, 300);
+//							}
+//					});
 
 			}
 

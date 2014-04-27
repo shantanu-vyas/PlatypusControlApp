@@ -3,6 +3,8 @@ package com.example.platypuscontrolapp;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import com.google.android.gms.maps.MapFragment;
+
 import edu.cmu.ri.crw.CrwNetworkUtils;
 
 import android.app.Activity;
@@ -43,6 +45,7 @@ public class ConnectScreen extends Activity implements OnClickListener {
 		submitButton = (Button) this.findViewById(R.id.submit);
 		submitButton.setOnClickListener(this);
 
+		
 		// @Override
 		// public boolean onKey(View v, int keyCode, KeyEvent event)
 		// {

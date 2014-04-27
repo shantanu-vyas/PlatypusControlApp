@@ -54,6 +54,7 @@
         android:layout_height="wrap_content"
         android:text="Color" />
 
+    <!--  -->
     <EditText
         android:id="@+id/colorBox"
         android:layout_width="wrap_content"

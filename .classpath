@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/google-play-services_lib"/>
 	<classpathentry kind="lib" path="C:/Users/stsvyas1/Desktop/adt-bundle-windows-x86-20130911/sdk/extras/google/google_play_services/libproject/google-play-services_lib/bin/google-play-services_lib.jar"/>
 	<classpathentry kind="lib" path="//LT-306-SVYAS2/Users/stsvyas1/workspace/PlatypusControlApp/libs/crwlib_core.jar"/>
+	<classpathentry kind="lib" path="//LT-306-SVYAS2/Users/stsvyas1/workspace/PlatypusControlApp/libs/jscience.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

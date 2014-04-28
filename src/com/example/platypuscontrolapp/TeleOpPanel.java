@@ -258,21 +258,24 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				map.moveCamera(CameraUpdateFactory.newLatLngZoom(pHollowStartingPoint, 15));
 				map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
 
-			
-//				handlerRudder.post(new Runnable()
-//					{
-//						@Override
-//						public void run()
-//							{
-//								heading -= (rudderCurrent - 50) * .001;
-//								lat += Math.cos(heading) * (thrustCurrent - 50) * .0000001;
-//								lon += Math.sin(heading) * (thrustCurrent) * .0000001;
-//								boat2.setPosition(new LatLng(lat, lon));
-//								loca.setText(lat + "\n" + lon);
-//								boat2.setRotation((float) (heading * (180 / Math.PI)));
-//								handlerRudder.postDelayed(this, 300);
-//							}
-//					});
+				rudderCurrent = 50;
+				boat2.setRotation((float)(heading*(180/Math.PI)));
+				handlerRudder.post(new Runnable()
+					{
+						@Override
+						public void run()
+							{
+								heading -= (rudderCurrent - 50) * .001;
+								if (thrustCurrent > 0)
+									{
+										lat += Math.cos(heading) * (thrustCurrent - 50) * .0000001;
+										lon += Math.sin(heading) * (thrustCurrent) * .0000001;
+										boat2.setRotation((float) (heading * (180 / Math.PI)));
+									}
+								boat2.setPosition(new LatLng(lat, lon));
+								handlerRudder.postDelayed(this, 300);
+							}
+					});
 
 			}
 

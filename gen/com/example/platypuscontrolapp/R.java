@@ -230,7 +230,7 @@ containing a value of this type.
     }
     public static final class id {
         public static final int Autonomous=0x7f050018;
-        public static final int action_settings=0x7f05001e;
+        public static final int action_settings=0x7f050020;
         public static final int actualBoatRadio=0x7f05000d;
         public static final int color=0x7f05000a;
         public static final int colorBox=0x7f05000b;
@@ -239,12 +239,14 @@ containing a value of this type.
         public static final int getRudderProgress=0x7f050015;
         public static final int getThrustProgress=0x7f050012;
         public static final int hybrid=0x7f050004;
+        public static final int infotest=0x7f05001d;
         public static final int ipAddress1=0x7f050007;
         public static final int ipaddress=0x7f050006;
         public static final int iptest=0x7f050019;
         public static final int linlay=0x7f05001a;
         public static final int location=0x7f050011;
         public static final int map=0x7f050010;
+        public static final int mapButton=0x7f05001f;
         public static final int none=0x7f050000;
         public static final int normal=0x7f050001;
         public static final int phoneIDNumber=0x7f050009;
@@ -257,7 +259,7 @@ containing a value of this type.
         public static final int simvsactual=0x7f05000c;
         public static final int submit=0x7f05000f;
         public static final int terrain=0x7f050003;
-        public static final int test12=0x7f05001d;
+        public static final int test=0x7f05001e;
         public static final int thrustBar=0x7f050014;
         public static final int thrustBarTextView=0x7f050013;
     }

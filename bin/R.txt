@@ -67,7 +67,7 @@ int drawable ic_plusone_standard_off_client 0x7f02001c
 int drawable ic_plusone_tall_off_client 0x7f02001d
 int drawable logo 0x7f02001e
 int id Autonomous 0x7f050018
-int id action_settings 0x7f05001e
+int id action_settings 0x7f050020
 int id actualBoatRadio 0x7f05000d
 int id color 0x7f05000a
 int id colorBox 0x7f05000b
@@ -76,12 +76,14 @@ int id enterscreen 0x7f050005
 int id getRudderProgress 0x7f050015
 int id getThrustProgress 0x7f050012
 int id hybrid 0x7f050004
+int id infotest 0x7f05001d
 int id ipAddress1 0x7f050007
 int id ipaddress 0x7f050006
 int id iptest 0x7f050019
 int id linlay 0x7f05001a
 int id location 0x7f050011
 int id map 0x7f050010
+int id mapButton 0x7f05001f
 int id none 0x7f050000
 int id normal 0x7f050001
 int id phoneIDNumber 0x7f050009
@@ -94,7 +96,7 @@ int id simulationRadio 0x7f05000e
 int id simvsactual 0x7f05000c
 int id submit 0x7f05000f
 int id terrain 0x7f050003
-int id test12 0x7f05001d
+int id test 0x7f05001e
 int id thrustBar 0x7f050014
 int id thrustBarTextView 0x7f050013
 int integer google_play_services_version 0x7f070000

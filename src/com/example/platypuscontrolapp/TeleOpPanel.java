@@ -18,9 +18,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import edu.cmu.ri.crw.AsyncVehicleServer;
 import edu.cmu.ri.crw.PoseListener;
-import edu.cmu.ri.crw.VelocityListener;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
@@ -52,12 +50,14 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		int a = 0;
 		InetSocketAddress addr;
 		UdpVehicleServer server = null;
+		Twist twist = new Twist();
 		String random = "";
 		double xValue;
 		double yValue;
 		double zValue;
 		GoogleMap map;
 
+		
 		TextView loca = null;
 		Marker boat;
 		Marker boat2;
@@ -68,45 +68,51 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		int thrustCurrent;
 		int rudderCurrent;
 		double heading = Math.PI / 2.;
-		int rudderTemp = 50;
-		int thrustTemp = 0;
-		double temp;
-		public static final double THRUST_MIN = 0.0;
-		public static final double THRUST_MAX = 1.0;
-		public static final double RUDDER_MIN = 1.0;
-		public static final double RUDDER_MAX = -1.0;
-
+		
+		
 		protected void onCreate(Bundle savedInstanceState)
 			{
 				super.onCreate(savedInstanceState);
 				this.setContentView(R.layout.teleoppanel);
-				// initBoat();
+				//initBoat();
 				ipAddressBox = (TextView) this.findViewById(R.id.printIpAddress);
 				thrust = (SeekBar) this.findViewById(R.id.thrustBar);
 				rudder = (SeekBar) this.findViewById(R.id.rudderBar);
 				linlay = (LinearLayout) this.findViewById(R.id.linlay);
 				thrustProgress = (TextView) this.findViewById(R.id.getThrustProgress);
 				rudderProgress = (TextView) this.findViewById(R.id.getRudderProgress);
-				test = (TextView) this.findViewById(R.id.test12);
-				// mapButton = (Button) this.findViewById(R.id.mapButton);
+				// testIP = (TextView)this.findViewById(R.id.test);
+				mapButton = (Button) this.findViewById(R.id.mapButton);
 				autonomous = (CheckBox) this.findViewById(R.id.Autonomous);
 				map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-
+				
+				
 				thrust.setProgress(0);
 				rudder.setProgress(50);
-				;
-				// test.setText(ConnectScreen.boat.getPose());
+				//test.setText(ConnectScreen.boat.getPose());
 
 				ConnectScreen.boat.getPose();
-				// ipAddressBox.setText(ConnectScreen.boat.getIpAddress().toString());
-				// setVehicle();
+				ipAddressBox.setText(ConnectScreen.boat.getIpAddress().toString());
+				updateThrust();
+				updateRudder();
+			//	ConnectScreen.boat.getPose();
+				
+				PoseListener pl = new PoseListener() {
+					
+					  public void receivedPose(UtmPose upwcs)
+								{
+								 UtmPose _pose = upwcs.clone();
+									 {
+										 random = "" + _pose.pose.getX() + "\n" + _pose.pose.getY() + "\n" + _pose.pose.getZ();
+										 xValue = _pose.pose.getX();
+										 yValue = _pose.pose.getY();
+										 zValue = _pose.pose.getZ();
+									 }
+								}
+						};
+						ConnectScreen.boat.returnServer().addPoseListener(pl, null);
 
-				// pose stuff get this working
-				// ConnectScreen.boat.getPose();
-				// test.setText(String.valueOf(ConnectScreen.boat.getPoseX()) +
-				// "\n" + String.valueOf(ConnectScreen.boat.getPoseY())+"\n" +
-				// String.valueOf(ConnectScreen.boat.getPoseZ()));
-
+				
 				new NetworkAsync().execute();
 
 				if (ConnectScreen.getBoatType() == false)
@@ -114,7 +120,10 @@ public class TeleOpPanel extends Activity implements OnClickListener
 						ipAddressBox.setText("Simulated Phone");
 						simulatedBoat();
 					}
+				mapButton = (Button) this.findViewById(R.id.mapButton);
+				mapButton.setOnClickListener(this);
 			}
+		
 
 		public static boolean validIP(String ip)
 			{
@@ -135,55 +144,42 @@ public class TeleOpPanel extends Activity implements OnClickListener
 						return false;
 					}
 			}
-
+		
 		@Override
 		public void onClick(View v)
 			{
+				// TODO Auto-generated method stub
 				startActivity(new Intent(this, MapTest.class));
 			}
-
+		
 		public void updateVelocity(Boat a)
 			{
-				// ConnectScreen.boat.setVelocity(thrust.getProgress(),
-				// rudder.getProgress());
-				if (a.returnServer() != null)
-					{
-						Twist twist = new Twist();
-						twist.dx(fromProgressToRange(thrust.getProgress(), THRUST_MIN, THRUST_MAX));
-						twist.drz(fromProgressToRange(rudder.getProgress(), RUDDER_MIN, RUDDER_MAX));
-						a.returnServer().setVelocity(twist, null);
-					}
+				ConnectScreen.boat.setVelocity(thrust.getProgress(), rudder.getProgress());
 			}
-
+		public void updateScreenVelocity()
+			{
+				thrust.setProgress((int)ConnectScreen.boat.getThrust());
+				rudder.setProgress((int)ConnectScreen.boat.getRudder());
+			}
 		private class NetworkAsync extends AsyncTask<String, Integer, String>
 			{
 				long oldTime = 0;
-				String tester = "done";
 
 				@Override
 				protected String doInBackground(String... arg0)
 					{
-						setVelListener();
 						while (true)
 							{
 								if (System.currentTimeMillis() % 100 == 0 && oldTime != System.currentTimeMillis())
 									{
-										if (thrust.getProgress() != thrustTemp)
-											{
-												updateVelocity(ConnectScreen.boat);
-												tester = "thrust sent";
-											}
-										thrustTemp = thrust.getProgress();
-
-										if (rudder.getProgress() != rudderTemp)
-											{
-												updateVelocity(ConnectScreen.boat);
-												tester = "rudder sent";
-											}
-
+									  
+									
+										updateVelocity(ConnectScreen.boat);
+									//	updateScreenVelocity();
 										oldTime = System.currentTimeMillis();
+									//	a += 1;
+										
 										publishProgress();
-										rudderTemp = rudder.getProgress();
 									}
 							}
 					}
@@ -191,17 +187,69 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				@Override
 				protected void onProgressUpdate(Integer... result)
 					{
-						thrustProgress.setText(String.valueOf(fromProgressToRange(thrust.getProgress(), THRUST_MIN, THRUST_MAX)));
-						rudderProgress.setText(String.valueOf(fromProgressToRange(rudder.getProgress(), RUDDER_MIN, RUDDER_MAX)));
+						//test.setText("" + a + random);
 					}
 			}
+		
+		public void updateThrust()
+			{
+				thrust.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+					{
+						@Override
+						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+							{
+								// TODO Auto-generated method stub
+								thrustProgress.setText(String.valueOf(progress));
+								thrustCurrent = progress;
+							} 	
 
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar)
+							{
+							}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar)
+							{
+							}
+					});
+			}
+
+		public void updateRudder()
+			{
+				rudder.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+					{
+						@Override
+						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+							{
+								// TODO Auto-generated method stub
+								rudderProgress.setText(String.valueOf(progress));
+								rudderCurrent = progress;
+							}
+
+						@Override
+						public void onStartTrackingTouch(SeekBar seekBar)
+							{
+							}
+
+						@Override
+						public void onStopTrackingTouch(SeekBar seekBar)
+							{
+							}
+					});
+			}
+
+		
 		public void simulatedBoat()
 			{
-
-				boat2 = map.addMarker(new MarkerOptions().anchor(.5f, .5f).flat(true).rotation(270).title("Boat 1")
-						.snippet("IP Address: 192.168.1.1").position(pHollowStartingPoint).flat(true)
-				// .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
+				
+				boat2 = map.addMarker(new MarkerOptions()
+							.anchor(.5f, .5f).flat(true)
+							.rotation(270).title("Boat 1")
+							.snippet("IP Address: 192.168.1.1")
+							.position(pHollowStartingPoint)
+							.flat(true)
+						// .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow))
 						);
 
 				lat = pHollowStartingPoint.latitude;
@@ -211,51 +259,24 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
 
 				rudderCurrent = 50;
-				boat2.setRotation((float) (heading * (180 / Math.PI)));
+				boat2.setRotation((float)(heading*(180/Math.PI)));
 				handlerRudder.post(new Runnable()
 					{
 						@Override
 						public void run()
 							{
+								heading -= (rudderCurrent - 50) * .001;
 								if (thrustCurrent > 0)
 									{
 										lat += Math.cos(heading) * (thrustCurrent - 50) * .0000001;
 										lon += Math.sin(heading) * (thrustCurrent) * .0000001;
-										heading -= (rudderCurrent - 50) * .001;
 										boat2.setRotation((float) (heading * (180 / Math.PI)));
 									}
 								boat2.setPosition(new LatLng(lat, lon));
-								handlerRudder.postDelayed(this, 200);
+								handlerRudder.postDelayed(this, 300);
 							}
 					});
-			}
 
-		public void setVelListener()
-			{
-
-				ConnectScreen.boat.returnServer().addVelocityListener(new VelocityListener()
-					{
-						public void receivedVelocity(Twist twist)
-							{
-								thrust.setProgress(fromRangeToProgress(twist.dx(), THRUST_MIN, THRUST_MAX));
-								rudder.setProgress(fromRangeToProgress(twist.drz(), RUDDER_MIN, RUDDER_MAX));
-							}
-					}, null);
-
-			}
-
-		// Converts from progress bar value to linear scaling between min and
-		// max
-		private double fromProgressToRange(int progress, double min, double max)
-			{
-				return (min + (max - min) * ((double) progress) / 100.0);
-			}
-
-		// Converts from progress bar value to linear scaling between min and
-		// max
-		private int fromRangeToProgress(double value, double min, double max)
-			{
-				return (int) (100.0 * (value - min) / (max - min));
 			}
 
 	}// class

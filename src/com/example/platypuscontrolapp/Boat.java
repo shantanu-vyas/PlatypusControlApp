@@ -1,6 +1,8 @@
 package com.example.platypuscontrolapp;
 
 import java.net.InetSocketAddress;
+
+import edu.cmu.ri.crw.FunctionObserver;
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.UtmPose;
@@ -20,6 +22,7 @@ public class Boat
 		private double xValue;
 		private double yValue;
 		private double zValue;
+		private boolean connected;
 		public Boat()
 			{
 			}
@@ -53,7 +56,7 @@ public class Boat
 										 yValue = _pose.pose.getY();
 										 zValue = _pose.pose.getZ();
 										 //_pose.origin.
-		
+										
 									 }
 								}
 						};
@@ -90,5 +93,20 @@ public class Boat
 		public double getPoseZ()
 			{
 				return zValue;
+			}
+		public boolean isConnected()
+			{
+				 server.isConnected(new FunctionObserver<Boolean>() {
+
+		                public void completed(Boolean v) {
+		                   connected = true;
+		                }
+
+		                public void failed(FunctionError fe) {
+		                   connected = false;
+		                }
+		            });
+				 return connected;
+				
 			}
 	}

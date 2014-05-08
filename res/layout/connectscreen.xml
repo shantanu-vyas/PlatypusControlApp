@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical" 
+    android:focusable="true"
+android:focusableInTouchMode="true">
 
     <TextView
         android:id="@+id/enterscreen"
@@ -11,7 +13,9 @@
         android:layout_gravity="center"
         android:gravity="center_horizontal|center_vertical"
         android:text="Connect to a boat"
-        android:textSize="@dimen/open" />
+        android:textSize="@dimen/open" 
+       
+        />
 
     <TextView
         android:id="@+id/ipaddress"
@@ -20,15 +24,16 @@
         android:gravity="center_horizontal|center_vertical"
         android:paddingLeft="10dp"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:text="IP Address" />
+        android:text="IP Address" 
+        />
 
     <EditText
         android:id="@+id/ipAddress1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="XXX.XXX.X.X:11411"
-        android:inputType="number|text" />
+        android:hint="XXX.XXX.XXX.XXX"
+        android:inputType="" />
 
     
     <TextView
@@ -55,14 +60,15 @@
         android:text="Color" />
 
     <!--  -->
+
     <EditText
         android:id="@+id/colorBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
-        android:ems="10" >
-
-        <requestFocus />
+        android:ems="10"
+        android:inputType="text" >
+       
     </EditText>
 
     <RadioGroup

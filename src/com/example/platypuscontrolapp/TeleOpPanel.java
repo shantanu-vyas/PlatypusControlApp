@@ -8,8 +8,13 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +25,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import edu.cmu.ri.crw.AsyncVehicleServer;
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.VelocityListener;
@@ -46,7 +52,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class TeleOpPanel extends Activity implements OnClickListener
+public class TeleOpPanel extends Activity implements OnClickListener, SensorEventListener
 	{
 
 		SeekBar thrust = null;
@@ -60,6 +66,7 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		static TextView testIP = null;
 		Thread networkThread = null;
 		TextView test = null;
+		ToggleButton tiltButton = null;
 		Handler network = new Handler();
 
 		int a = 0;
@@ -94,10 +101,20 @@ public class TeleOpPanel extends Activity implements OnClickListener
 		double temp;
 		double rot;
 
+		float tempX = 0;
+		float tempY = 0;
+
+		private long lastUpdate = 0;
+		private float last_x, last_y, last_z;
+		private static final int SHAKE_THRESHOLD = 600;
+
 		public static final double THRUST_MIN = 0.0;
 		public static final double THRUST_MAX = 1.0;
 		public static final double RUDDER_MIN = 1.0;
 		public static final double RUDDER_MAX = -1.0;
+
+		SensorManager senSensorManager;
+		Sensor senAccelerometer;
 
 		protected void onCreate(Bundle savedInstanceState)
 			{
@@ -111,7 +128,15 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				thrustProgress = (TextView) this.findViewById(R.id.getThrustProgress);
 				rudderProgress = (TextView) this.findViewById(R.id.getRudderProgress);
 				test = (TextView) this.findViewById(R.id.test12);
+				tiltButton = (ToggleButton) this.findViewById(R.id.tiltButton);
 				// autonomous = (CheckBox) this.findViewById(R.id.Autonomous);
+
+				senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+				senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+				senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+				tiltButton.setTextOff("Tilt Control Deactivated");
+				tiltButton.setTextOn("Tilt Control Activated");
 
 				map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
 				// map.moveCamera(CameraUpdateFactory.newLatLngZoom(new
@@ -121,8 +146,8 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				if (ConnectScreen.getBoatType() == true)
 					{
 						boat2 = map.addMarker(new MarkerOptions().anchor(.5f, .5f).flat(true).rotation(270).title("Boat 1")
-								.snippet(ConnectScreen.boat.getIpAddress().toString()).position(pHollowStartingPoint).title("Boat 1").snippet("127.0.0.1 (localhost)")
-								.flat(true));
+								.snippet(ConnectScreen.boat.getIpAddress().toString()).position(pHollowStartingPoint).title("Boat 1")
+								.snippet("127.0.0.1 (localhost)").flat(true));
 						map.moveCamera(CameraUpdateFactory.newLatLngZoom(pHollowStartingPoint, 14));
 						map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
 
@@ -204,8 +229,8 @@ public class TeleOpPanel extends Activity implements OnClickListener
 												xValue = _pose.pose.getX();
 												yValue = _pose.pose.getY();
 												zValue = _pose.pose.getZ();
-												rotation = String.valueOf(Math.PI/2 - _pose.pose.getRotation().toYaw());
-												rot = Math.PI/2 - _pose.pose.getRotation().toYaw();
+												rotation = String.valueOf(Math.PI / 2 - _pose.pose.getRotation().toYaw());
+												rot = Math.PI / 2 - _pose.pose.getRotation().toYaw();
 
 												zone = String.valueOf(_pose.origin.zone);
 
@@ -256,19 +281,21 @@ public class TeleOpPanel extends Activity implements OnClickListener
 						try
 							{
 								a++;
-								test.setText("x: " + xValue + "\n y: " + yValue + "\n zone: " + zone + "\n rotation: " + rotation + "\n"
-										+ latlongloc.toText() + "\n" + a);
-	
+								// test.setText("x: " + xValue + "\n y: " +
+								// yValue + "\n zone: " + zone + "\n rotation: "
+								// + rotation + "\n"
+								// + latlongloc.toText() + "\n" + a);
 
-								
 								boat2.setPosition(new LatLng(latlongloc.latitudeValue(SI.RADIAN) * 57.2957795,
 										latlongloc.longitudeValue(SI.RADIAN) * 57.2957795));
-								boat2.setRotation((float)(rot* 57.2957795));
+								boat2.setRotation((float) (rot * 57.2957795));
 								if (firstTime == true)
 									{
 										try
 											{
-												map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latlongloc.latitudeValue(SI.RADIAN)* 57.2957795,latlongloc.longitudeValue(SI.RADIAN)* 57.2957795), 14));
+												map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
+														latlongloc.latitudeValue(SI.RADIAN) * 57.2957795,
+														latlongloc.longitudeValue(SI.RADIAN) * 57.2957795), 14));
 												map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
 												firstTime = false;
 											} catch (Exception e)
@@ -280,8 +307,10 @@ public class TeleOpPanel extends Activity implements OnClickListener
 								// boat2.setSnippet(String.valueOf(latlongloc.toText();
 							} catch (Exception e)
 							{
-								test.setText("x: " + xValue + "\n y: " + yValue + "\n zone: " + zone + "\n rotation: " + rotation + "\n"
-										+ e.toString());
+								// test.setText("x: " + xValue + "\n y: " +
+								// yValue + "\n zone: " + zone + "\n rotation: "
+								// + rotation + "\n"
+								// + e.toString());
 
 							}
 
@@ -301,23 +330,6 @@ public class TeleOpPanel extends Activity implements OnClickListener
 
 		public void actualBoat()
 			{
-				try
-					{
-
-						// handlerRudder.post(new Runnable()
-						// {
-						// @Override
-						// public void run()
-						// {
-						//
-						//
-						// handlerRudder.postDelayed(this, 200);
-						// }
-						// });
-					} catch (Exception e)
-					{
-						test.setText(test.getText() + e.toString());
-					}
 			}
 
 		public void simulatedBoat()
@@ -385,4 +397,74 @@ public class TeleOpPanel extends Activity implements OnClickListener
 				return null;
 			}
 
-	}// class
+		/* accelerometer controls */
+		@Override
+		public void onAccuracyChanged(Sensor sensor, int accuracy)
+			{
+
+			}
+
+		@Override
+		public void onSensorChanged(SensorEvent sensorEvent)
+			{
+				Sensor mySensor = sensorEvent.sensor;
+				if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER)
+					{
+						float x = sensorEvent.values[0];
+						float y = sensorEvent.values[1];
+						float z = sensorEvent.values[2];
+
+						long curTime = System.currentTimeMillis();
+
+						if (tiltButton.isChecked())
+							{
+								if ((curTime - lastUpdate) > 100)
+									{
+										long diffTime = (curTime - lastUpdate);
+										lastUpdate = curTime;
+										float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
+
+										if (speed > SHAKE_THRESHOLD)
+											{
+											}
+
+										last_x = x; // rudder
+										last_y = y;
+										last_z = z; // thrust
+										test.setText("x: " + last_x + "y: " + last_y + "z: " + last_z);
+										
+										updateViaAcceleration(last_x, last_y, last_z);
+									}
+							}
+					}
+			}
+
+		public void updateViaAcceleration(float xval, float yval, float zval)
+			{
+				if (Math.abs(tempX - last_x) > 2.5)
+					{
+
+						if (last_x > 2)
+							{
+								thrust.setProgress(thrust.getProgress() - 3);
+							}
+						if (last_x < 2)
+							{
+								thrust.setProgress(thrust.getProgress() + 3);
+							}
+					}
+				if (Math.abs(tempY - last_y) > 1)
+					{
+						if (last_y > 2)
+							{
+								rudder.setProgress(rudder.getProgress() + 3);
+							}
+						if (last_y < -2)
+							{
+								rudder.setProgress(rudder.getProgress() - 3);
+							}
+					}
+			}
+
+	}
+// class

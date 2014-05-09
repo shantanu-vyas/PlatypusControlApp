@@ -4,12 +4,14 @@ import java.net.InetSocketAddress;
 
 import edu.cmu.ri.crw.FunctionObserver;
 import edu.cmu.ri.crw.PoseListener;
+import edu.cmu.ri.crw.WaypointListener;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
 
 import org.jscience.geography.coordinates.*;
 
+import com.google.android.gms.maps.model.LatLng;
 
 public class Boat
 	{
@@ -23,6 +25,7 @@ public class Boat
 		private double yValue;
 		private double zValue;
 		private boolean connected;
+		private WaypointListener waypointListen;
 		public Boat()
 			{
 			}
@@ -39,37 +42,54 @@ public class Boat
 			{
 				server.setVehicleService(a);
 			}
+
 		public InetSocketAddress getIpAddress()
 			{
 				return ipAddress;
 			}
+
 		public void getPose()
 			{
-				PoseListener pl = new PoseListener() {
-					
-					  public void receivedPose(UtmPose upwcs)
-								{
-								 UtmPose _pose = upwcs.clone();
-									 {
-										// random = "" + _pose.pose.getX() + "\n" + _pose.pose.getY() + "\n" + _pose.pose.getZ();
-										 xValue = _pose.pose.getX();
-										 yValue = _pose.pose.getY();
-										 zValue = _pose.pose.getZ();
-										 //_pose.origin.
-										
-									 }
-								}
-						};
-						ConnectScreen.boat.returnServer().addPoseListener(pl, null);
-					
+				PoseListener pl = new PoseListener()
+					{
+
+						public void receivedPose(UtmPose upwcs)
+							{
+								UtmPose _pose = upwcs.clone();
+									{
+										// random = "" + _pose.pose.getX() +
+										// "\n" + _pose.pose.getY() + "\n" +
+										// _pose.pose.getZ();
+										xValue = _pose.pose.getX();
+										yValue = _pose.pose.getY();
+										zValue = _pose.pose.getZ();
+										// _pose.origin.
+
+									}
+							}
+					};
+				ConnectScreen.boat.returnServer().addPoseListener(pl, null);
+
 			}
+
+		public LatLng getLatLngLocation()
+			{
+				return null;
+			}
+
+		public double getRotation()
+			{
+				return (Double) null;
+			}
+
 		public double getThrust()
 			{
-				return tw.dx()/.010;
+				return tw.dx() / .010;
 			}
+
 		public double getRudder()
 			{
-				return tw.drz()/.010;
+				return tw.drz() / .010;
 			}
 
 		public void setVelocity(int thrust, int rudder)
@@ -78,35 +98,60 @@ public class Boat
 				tw.drz(rudder * .010);
 				server.setVelocity(tw, null);
 			}
+
 		public UdpVehicleServer returnServer()
 			{
-				return server;	
+				return server;
 			}
+
 		public double getPoseX()
 			{
 				return xValue;
 			}
+
 		public double getPoseY()
 			{
 				return yValue;
 			}
+
 		public double getPoseZ()
 			{
 				return zValue;
 			}
+
 		public boolean isConnected()
 			{
-				 server.isConnected(new FunctionObserver<Boolean>() {
+				server.isConnected(new FunctionObserver<Boolean>()
+					{
+						public void completed(Boolean v)
+							{
+								connected = true;
+							}
 
-		                public void completed(Boolean v) {
-		                   connected = true;
-		                }
+						public void failed(FunctionError fe)
+							{
+								connected = false;
+							}
+					});
+				return connected;
 
-		                public void failed(FunctionError fe) {
-		                   connected = false;
-		                }
-		            });
-				 return connected;
+			}
+
+		public void initWaypointListener()
+			{
+				//waypointListen = new WaypointListener();
 				
+			}
+
+		public void addWaypoint()
+			{
+			}
+
+		public void moveWaypoint()
+			{
+			}
+
+		public void removeWaypoint()
+			{
 			}
 	}

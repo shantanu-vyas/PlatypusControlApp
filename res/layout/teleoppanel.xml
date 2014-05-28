@@ -27,7 +27,7 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.MapFragment"
         android:layout_width="match_parent"
-        android:layout_height="400dp" >
+        android:layout_height="110dp" >
 
     </fragment>
 
@@ -35,8 +35,10 @@
         android:id="@+id/tiltButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textOff="Tilt Control Deactivated"
         android:text="Tilt Control" />
 
+  
     <TextView
         android:id="@+id/getThrustProgress"
         android:layout_width="wrap_content"
@@ -51,8 +53,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="10dp"
-        android:text="Thrust Bar" />
-
+        android:text="Thrust Bar" 
+ 	/>
+    
     <SeekBar
         android:id="@+id/thrustBar"
         android:layout_width="match_parent"
@@ -83,6 +86,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal" />
+    
+    
+
 <!--  
 	   <CheckBox
         android:id="@+id/Autonomous"
@@ -90,7 +96,10 @@
         android:layout_height="wrap_content"
         android:text="autoBox" />
 -->
-    <requestFocus />
+
+    <requestFocus
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@+id/infotest"
@@ -103,7 +112,12 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:text="" />
-
+    <TextView
+	    android:id="@+id/log"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:text="" />
+	
 	<!--     <Button
         android:id="@+id/mapButton"
         android:layout_width="match_parent"

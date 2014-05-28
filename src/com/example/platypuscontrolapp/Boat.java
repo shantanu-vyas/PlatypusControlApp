@@ -6,10 +6,13 @@ import edu.cmu.ri.crw.FunctionObserver;
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.WaypointListener;
 import edu.cmu.ri.crw.data.Twist;
+import edu.cmu.ri.crw.data.Utm;
 import edu.cmu.ri.crw.data.UtmPose;
 import edu.cmu.ri.crw.udp.UdpVehicleServer;
 
 import org.jscience.geography.coordinates.*;
+
+import robotutils.Pose3D;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -26,6 +29,10 @@ public class Boat
 		private double zValue;
 		private boolean connected;
 		private WaypointListener waypointListen;
+		private UtmPose _waypoint = new UtmPose();
+		private final Object _waypointLock = new Object();
+		private String boatLog = "";
+
 		public Boat()
 			{
 			}
@@ -139,19 +146,54 @@ public class Boat
 
 		public void initWaypointListener()
 			{
-				//waypointListen = new WaypointListener();
-				
+				// waypointListen = new WaypointListener();
 			}
 
-		public void addWaypoint()
+		public void addWaypoint(Pose3D _pose, Utm _origin)
 			{
+				if (server == null)
+					return;
+
+				UtmPose[] wpPose = new UtmPose[1];
+				// synchronized (_waypointLock)
+				// {
+				// wpPose[0] = _waypoint;
+				// }
+				//
+
+				wpPose[0] = new UtmPose(_pose, _origin);
+				server.startWaypoints(wpPose, "POINT_AND_SHOOT", new FunctionObserver<Void>()
+					{
+						public void completed(Void v)
+							{
+							}
+
+						public void failed(FunctionError fe)
+							{
+							}
+					});
 			}
 
 		public void moveWaypoint()
 			{
 			}
 
-		public void removeWaypoint()
+		public void cancelWaypoint()
 			{
+				server.stopWaypoints(new FunctionObserver<Void>()
+							{
+								public void completed(Void v)
+									{
+										
+									}
+								public void failed(FunctionError fe)
+									{
+										
+									}
+							});
+			}
+		public void addToBoatLog(String s)
+			{
+				boatLog = boatLog + s  + "\n";
 			}
 	}

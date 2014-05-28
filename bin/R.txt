@@ -67,7 +67,7 @@ int drawable ic_plusone_standard_off_client 0x7f02001c
 int drawable ic_plusone_tall_off_client 0x7f02001d
 int drawable logo 0x7f02001e
 int id Autonomous 0x7f050018
-int id action_settings 0x7f050020
+int id action_settings 0x7f050021
 int id actualBoatRadio 0x7f05000d
 int id color 0x7f05000a
 int id colorBox 0x7f05000b
@@ -82,6 +82,7 @@ int id ipaddress 0x7f050006
 int id iptest 0x7f050019
 int id linlay 0x7f05001a
 int id location 0x7f050011
+int id log 0x7f050020
 int id map 0x7f050010
 int id none 0x7f050000
 int id normal 0x7f050001

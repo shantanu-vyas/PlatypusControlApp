@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,6 +19,7 @@ import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -27,8 +29,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import edu.cmu.ri.crw.AsyncVehicleServer;
+import edu.cmu.ri.crw.FunctionObserver;
 import edu.cmu.ri.crw.PoseListener;
 import edu.cmu.ri.crw.VelocityListener;
+import edu.cmu.ri.crw.FunctionObserver.FunctionError;
 import edu.cmu.ri.crw.data.Twist;
 import edu.cmu.ri.crw.data.Utm;
 import edu.cmu.ri.crw.data.UtmPose;
@@ -42,17 +46,20 @@ import org.apache.commons.math.linear.RealMatrix;
 import org.jscience.geography.coordinates.*;
 import org.jscience.geography.coordinates.crs.ReferenceEllipsoid;
 
+import robotutils.Pose3D;
 import robotutils.Quaternion;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.maps.GeoPoint;
 
-public class TeleOpPanel extends Activity implements OnClickListener, SensorEventListener
+public class TeleOpPanel extends Activity implements OnMapClickListener, SensorEventListener
 	{
 
 		SeekBar thrust = null;
@@ -64,16 +71,15 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 		CheckBox autonomous = null;
 		Button mapButton = null;
 		static TextView testIP = null;
-		Thread networkThread = null;
+		AsyncTask networkThread;
 		TextView test = null;
 		ToggleButton tiltButton = null;
+		TextView log = null;
 		Handler network = new Handler();
 
 		int a = 0;
-		InetSocketAddress addr;
-		UdpVehicleServer server = null;
-		String random = "";
-
+	
+		
 		double xValue;
 		double yValue;
 		double zValue;
@@ -104,6 +110,9 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 		float tempX = 0;
 		float tempY = 0;
 
+		SensorManager senSensorManager;
+		Sensor senAccelerometer;
+
 		private long lastUpdate = 0;
 		private float last_x, last_y, last_z;
 		private static final int SHAKE_THRESHOLD = 600;
@@ -112,9 +121,6 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 		public static final double THRUST_MAX = 1.0;
 		public static final double RUDDER_MIN = 1.0;
 		public static final double RUDDER_MAX = -1.0;
-
-		SensorManager senSensorManager;
-		Sensor senAccelerometer;
 
 		protected void onCreate(Bundle savedInstanceState)
 			{
@@ -129,6 +135,7 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 				rudderProgress = (TextView) this.findViewById(R.id.getRudderProgress);
 				test = (TextView) this.findViewById(R.id.test12);
 				tiltButton = (ToggleButton) this.findViewById(R.id.tiltButton);
+				log = (TextView) this.findViewById(R.id.log);
 				// autonomous = (CheckBox) this.findViewById(R.id.Autonomous);
 
 				senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -150,8 +157,28 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 								.snippet("127.0.0.1 (localhost)").flat(true));
 						map.moveCamera(CameraUpdateFactory.newLatLngZoom(pHollowStartingPoint, 14));
 						map.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
-
-						new NetworkAsync().execute();
+						map.setOnMapClickListener(this);
+//						setOnMapClickListener(new OnMapClickListener()
+//							{
+//							    @Override
+//							    public void onMapClick(LatLng point)
+//							    	{
+//							    		try
+//							    			{
+//							    				log.setText(String.valueOf(point.latitude) + " " + String.valueOf(point.longitude));
+//							    			}
+//							    		catch(Exception e)
+//							    		{
+//							    			log.setText(e.toString());
+//							    		}
+////							    		log.setText(point.toString());
+////							    		map.addMarker(new MarkerOptions().anchor(.5f, .5f).flat(true).title("Boat 1").snippet("Waypoint")
+////												 .position(point).title("Current Waypoint").snippet("127.0.0.1 (localhost)"));
+////										
+//							    	}
+//				
+//							});
+						networkThread = new NetworkAsync().execute();
 						actualBoat();
 
 					}
@@ -160,6 +187,7 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 						ipAddressBox.setText("Simulated Phone");
 						simulatedBoat();
 					}
+				//addWayPointFromMap();
 
 				thrust.setProgress(0);
 				rudder.setProgress(50);
@@ -170,7 +198,26 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 				// connectScreen.boat.getPose();
 
 			}
+		private void setOnMapClickListener(OnMapClickListener onMapClickListener)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+		
+		@Override
+		public void onPause()
+			{
+				//turns the thrust and rudder off when you pause the activity
+				thrust.setProgress(0);
+				rudder.setProgress(50);
+			}
+		@Override
+		public void onResume()
+			{
+				networkThread.execute();
+			}
 
+		
 		public static boolean validIP(String ip)
 			{
 				if (ip == null || ip == "")
@@ -191,11 +238,6 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 					}
 			}
 
-		@Override
-		public void onClick(View v)
-			{
-				startActivity(new Intent(this, MapTest.class));
-			}
 
 		public void updateVelocity(Boat a)
 			{
@@ -288,6 +330,7 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 
 								boat2.setPosition(new LatLng(latlongloc.latitudeValue(SI.RADIAN) * 57.2957795,
 										latlongloc.longitudeValue(SI.RADIAN) * 57.2957795));
+								test.setText(String.valueOf(rot * 57.2957795));
 								boat2.setRotation((float) (rot * 57.2957795));
 								if (firstTime == true)
 									{
@@ -365,7 +408,6 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 
 		public void setVelListener()
 			{
-
 				ConnectScreen.boat.returnServer().addVelocityListener(new VelocityListener()
 					{
 						public void receivedVelocity(Twist twist)
@@ -432,7 +474,7 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 										last_y = y;
 										last_z = z; // thrust
 										test.setText("x: " + last_x + "y: " + last_y + "z: " + last_z);
-										
+
 										updateViaAcceleration(last_x, last_y, last_z);
 									}
 							}
@@ -465,6 +507,62 @@ public class TeleOpPanel extends Activity implements OnClickListener, SensorEven
 							}
 					}
 			}
+//		public boolean onTouchEvent(MotionEvent event)
+//		    {
+//		    	
+//		        int X = (int)event.getX();          
+//		        int Y = (int)event.getY();
+//		        LatLng markerloc = map.getProjection().fromScreenLocation(new Point(X,Y));
+//		        //GeoPoint geoPoint = map.getProjection().fromPixels(X, Y);
+//		        map.addMarker(new MarkerOptions().anchor(.5f, .5f).flat(true).title("Boat 1").snippet("Waypoint")
+//						// .position(convertUtmLatLng(pose,origin))
+//								.position(markerloc).title("Current Waypoint").snippet("127.0.0.1 (localhost)"));
+//				return true;
+//		    }
+		
+		@Override
+		public void onMapClick(LatLng point) {
+		
+		  test.setText(String.valueOf(point.latitude) + " "+ String.valueOf(point.longitude));
+	      map.addMarker(new MarkerOptions()
+	      .anchor(.5f, .5f).flat(true)
+	      .title("Waypoint")
+	      .snippet("Waypoint" + point.toString())
+		  .position(point));
+		 }
 
+		public void addWayPointFromMap()
+			{
+				// when you click you make utm pose... bewlow is fake values
+				Pose3D pose = new Pose3D(1, 1, 0, 0.0, 0.0, 10);
+				Utm origin = new Utm(17, true);
+				//ConnectScreen.boat.addWaypoint(pose, origin);
+				UtmPose[] wpPose = new UtmPose[1];
+				wpPose[0] = new UtmPose(pose, origin);
+				ConnectScreen.boat.returnServer().startWaypoints(wpPose, "POINT_AND_SHOOT", new FunctionObserver<Void>()
+					{
+						public void completed(Void v)
+							{
+								log.setText("completed");
+							}
+
+						public void failed(FunctionError fe)
+							{
+								log.setText("failed");
+							}
+					});				
+				
+	
+				
+				map.addMarker(new MarkerOptions().anchor(.5f, .5f).flat(true).title("Boat 1").snippet("Waypoint")
+				// .position(convertUtmLatLng(pose,origin))
+						.position(pHollowStartingPoint).title("Current Waypoint").snippet("127.0.0.1 (localhost)"));
+			}
+
+		public LatLng convertUtmLatLng(Pose3D _pose, Utm _origin)
+			{
+				LatLong temp = UTM.utmToLatLong(UTM.valueOf(_origin.zone, 'T', _pose.getX(), _pose.getY(), SI.METER), ReferenceEllipsoid.WGS84);
+				return new LatLng(temp.latitudeValue(SI.RADIAN), temp.longitudeValue(SI.RADIAN));
+			}
 	}
 // class

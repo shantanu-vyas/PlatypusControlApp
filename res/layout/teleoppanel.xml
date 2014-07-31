@@ -30,14 +30,36 @@
         android:layout_height="110dp" >
 
     </fragment>
-
-    <ToggleButton
+	<ToggleButton
         android:id="@+id/tiltButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textOff="Tilt Control Deactivated"
-        android:text="Tilt Control" />
+        android:textOn="Tilt Control Activated"
+        android:text="Tilt Control" 
+        />
+    <RelativeLayout
+    android:id="@+id/rel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    
+    <ToggleButton
+        android:id="@+id/waypointButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Waypoints" 
+        android:textOn="Add Waypoints"
+        android:textOff="Add Waypoints"/>
 
+    <Button
+        android:id="@+id/waypointDeleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete All Waypoints"
+        android:layout_toRightOf="@id/waypointButton" />
+       
+	</RelativeLayout>
   
     <TextView
         android:id="@+id/getThrustProgress"
@@ -47,6 +69,8 @@
         android:paddingTop="10dp"
         android:text="0"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    
 
     <TextView
         android:id="@+id/thrustBarTextView"
@@ -101,17 +125,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 
-    <TextView
-        android:id="@+id/infotest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10" />
-
-	<TextView
-	    android:id="@+id/test12"
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:text="" />
     <TextView
 	    android:id="@+id/log"
 	    android:layout_width="match_parent"

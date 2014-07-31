@@ -32,6 +32,7 @@ public class Boat
 		private UtmPose _waypoint = new UtmPose();
 		private final Object _waypointLock = new Object();
 		private String boatLog = "";
+		private boolean currentWaypointPassed;
 
 		public Boat()
 			{
@@ -166,10 +167,14 @@ public class Boat
 					{
 						public void completed(Void v)
 							{
+							currentWaypointPassed = true;
+							boatLog ="done";
 							}
 
 						public void failed(FunctionError fe)
 							{
+							currentWaypointPassed = false;
+							boatLog = "failed";
 							}
 					});
 			}
@@ -196,4 +201,12 @@ public class Boat
 			{
 				boatLog = boatLog + s  + "\n";
 			}
+		public String getBoatLog()
+		{
+			return boatLog;
+		}
+		public boolean getCurrentWaypointStatus()
+		{
+			return currentWaypointPassed;
+		}
 	}
